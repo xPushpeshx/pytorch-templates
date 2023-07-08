@@ -29,27 +29,25 @@ list of loss functions:
 
 """
 
+class DiceLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(DiceLoss, self).__init__()
 
-def soft_dice_loss(outputs, targets, per_image=False, per_channel=False):
-    batch_size, n_channels = outputs.size(0), outputs.size(1)
-    
-    eps = 1e-6
-    n_parts = 1
-    if per_image:
-        n_parts = batch_size
-    if per_channel:
-        n_parts = batch_size * n_channels
-    
-    dice_target = targets.contiguous().view(n_parts, -1).float()
-    dice_output = outputs.contiguous().view(n_parts, -1)
-    intersection = torch.sum(dice_output * dice_target, dim=1)
-    union = torch.sum(dice_output, dim=1) + torch.sum(dice_target, dim=1) + eps
-    loss = (1 - (2 * intersection + eps) / union).mean()
-    return loss
+    def forward(self, inputs, targets, smooth=1):
+        
+        #comment out if your model contains a sigmoid or equivalent activation layer
+        inputs = F.sigmoid(inputs)       
+        
+        #flatten label and prediction tensors
+        inputs = inputs.view(-1)
+        targets = targets.view(-1)
+        
+        intersection = (inputs * targets).sum()                            
+        dice = (2.*intersection + smooth)/(inputs.sum() + targets.sum() + smooth)  
+        
+        return 1 - dice
 
-def dice_metric(preds, trues, per_image=False, per_channel=False):
-    preds = preds.float()
-    return 1 - soft_dice_loss(preds, trues, per_image, per_channel)
+
 
 
 def jaccard(outputs, targets, per_image=False, non_empty=False, min_pixels=5):
@@ -78,15 +76,6 @@ def jaccard(outputs, targets, per_image=False, non_empty=False, min_pixels=5):
     return losses.mean()
 
 
-class DiceLoss(nn.Module):
-    def __init__(self, weight=None, size_average=True, per_image=False):
-        super().__init__()
-        self.size_average = size_average
-        self.register_buffer('weight', weight)
-        self.per_image = per_image
-
-    def forward(self, input, target):
-        return soft_dice_loss(input, target, per_image=self.per_image)
 
 
 class JaccardLoss(nn.Module):

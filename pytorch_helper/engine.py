@@ -46,7 +46,7 @@ def test_step(
     model.eval()
     test_loss,test_acc=0.0,0.0
 
-    with torch.inference_model():
+    with torch.inference_mode():
         for btach, (X,y) in enumerate(dataloader):
             X,y=X.to(device),y.to(device)
 

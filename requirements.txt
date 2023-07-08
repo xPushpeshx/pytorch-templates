@@ -1,0 +1,8 @@
+albumentations
+catalyst
+pytorch
+torchvision
+tqdm
+matplotlib
+numpy
+scikitlearn
