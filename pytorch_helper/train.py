@@ -35,11 +35,21 @@ transform = A.Compose([
     ToTensorV2()
 ])
 
-train_dataloader,test_dataloader,class_names=data_setup.create_dataloader_images(train_dir,
+train_dataloader,test_dataloader,class_names=data_setup.create_dataloader_for_mask(train_dir,
                                                                       test_dir,
                                                                       transform,
                                                                       BATCH_SIZE,
                                                                       NUM_WORKERS)
+
+
+#train_dl,test_dl=data_setup.create_dataloader_images( X_train,
+#                                                y_train,
+#                                                X_val,
+#                                                y_val,
+#                                                train_transform,
+#                                               test_transform,
+#                                               BATCH_SIZE,
+#                                                NUM_WORKERS)
 
 model=model_builder ## get model.to(device)
 

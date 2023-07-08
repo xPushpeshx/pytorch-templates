@@ -55,18 +55,38 @@ def create_dataloader_for_mask(
     return dataloader
 
 
+class CustomDataset(Dataset):
+    def __init__(self, images, labels, transform=None):
+        self.images = images
+        self.labels = labels
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, index):
+        label = self.labels[index]
+        image = cv2.imread(self.images[index])
+
+        if self.transform is not None:
+            image_np = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = self.transform(image=image_np)
+            image = image['image']
+
+        return image, label
 
 def create_dataloader_images(
-        train_dir: str,
-        test_dir: str,
-        transform: transforms.Compose,
+        X_train_dir: str,
+        y_train,
+        X_test_dir: str,
+        y_test,
+        test_transform,
+        train_transform,
         batch_size: int,
         num_workers: int ,
 ):
-    train_data=datasets.ImageFolder(train_dir,transform=transform)
-    test_data=datasets.ImageFolder(test_dir,transform=transform)
-
-    class_names=train_data.classes
+    train_data=CustomDataset(X_train_dir,y_train,transform=train_transform)
+    test_data=CustomDataset(X_test_dir,y_test,transform=test_transform)
 
     train_dataloader=DataLoader(
         train_data,
@@ -79,9 +99,9 @@ def create_dataloader_images(
     test_dataloader=DataLoader(
         test_data,
         batch_size=batch_size,
-        shuffle=False,
+        shuffle=True,
         num_workers=num_workers,
         pin_memory=True,
     )
 
-    return train_dataloader,test_dataloader,class_names
+    return train_dataloader,test_dataloader
