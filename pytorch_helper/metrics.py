@@ -1,4 +1,6 @@
 from catalyst import metrics
+import torch
+from torcheval.metrics import MulticlassAUROC
 
 def get_IOU(outputs,targets):
     metric = metrics.IOUMetric()
@@ -21,6 +23,11 @@ def get_tresky(outputs,targets,threshold=0.5):
 def get_accuracy(outputs,targets):
     metric = metrics.accuracy(outputs,targets)
     return metric[0]
+
+def get_auc_roc(outputs,targets):
+    metric=MulticlassAUROC(num_classes=3)
+    metric.update(outputs,targets)
+    return torch.tensor([metric.compute()])
 
 def get_clasification_metrics(outputs,targets):
     metric = metrics.precision_recall_fbeta_support(outputs,targets)
